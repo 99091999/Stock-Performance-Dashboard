@@ -1,0 +1,102 @@
+===========================================================
+DAX MEASURES — Ford vs GM vs Tesla Stock Performance Dashboard
+===========================================================
+Data model: one fact table per company (DAX_Ford_Stock, DAX_GM_Stock,
+DAX_Tesla_Stock) appended into a single "Stocks" table, or kept as
+three tables joined by Date on a shared Calendar table.
+Base columns expected: Date, Company, Open, High, Low, Close,
+Adj Close, Volume, Prev Close, Daily Return %, Daily Range,
+Cumulative Return %.
+
+-----------------------------------------------------------
+1. CORE KPI CARDS
+-----------------------------------------------------------
+
+Total Volume Traded =
+SUM ( Stocks[Volume] )
+
+Trading Days =
+DISTINCTCOUNT ( Stocks[Date] )
+
+Average Closing Price =
+AVERAGE ( Stocks[Close] )
+
+Total Return % =
+VAR FirstClose =
+    CALCULATE ( SELECTEDVALUE ( Stocks[Close] ), FIRSTDATE ( Stocks[Date] ) )
+VAR LastClose =
+    CALCULATE ( SELECTEDVALUE ( Stocks[Close] ), LASTDATE ( Stocks[Date] ) )
+RETURN
+    DIVIDE ( LastClose - FirstClose, FirstClose ) * 100
+
+-----------------------------------------------------------
+2. RETURN & TREND MEASURES
+-----------------------------------------------------------
+
+Daily Return % =
+VAR PrevClose =
+    CALCULATE (
+        SELECTEDVALUE ( Stocks[Close] ),
+        DATEADD ( Stocks[Date], -1, DAY )
+    )
+RETURN
+    DIVIDE ( Stocks[Close] - PrevClose, PrevClose ) * 100
+
+Cumulative Return % =
+VAR FirstClose =
+    CALCULATE (
+        SELECTEDVALUE ( Stocks[Close] ),
+        FILTER ( ALL ( Stocks ), Stocks[Company] = SELECTEDVALUE ( Stocks[Company] ) ),
+        FIRSTDATE ( Stocks[Date] )
+    )
+RETURN
+    DIVIDE ( SELECTEDVALUE ( Stocks[Close] ) - FirstClose, FirstClose ) * 100
+
+20-Day Moving Average =
+AVERAGEX (
+    TOPN ( 20, FILTER ( ALL ( Stocks[Date] ), Stocks[Date] <= MAX ( Stocks[Date] ) ), Stocks[Date], DESC ),
+    CALCULATE ( AVERAGE ( Stocks[Close] ) )
+)
+
+-----------------------------------------------------------
+3. RISK / VOLATILITY MEASURES
+-----------------------------------------------------------
+
+Volatility (Std Dev of Daily Return) =
+STDEV.P ( Stocks[Daily Return %] )
+
+Average Daily Trading Range =
+AVERAGE ( Stocks[Daily Range] )
+
+Best Single Day % =
+MAXX ( Stocks, Stocks[Daily Return %] )
+
+Worst Single Day % =
+MINX ( Stocks, Stocks[Daily Return %] )
+
+-----------------------------------------------------------
+4. COMPARATIVE / RANKING MEASURES
+-----------------------------------------------------------
+
+Best Performer (by Total Return) =
+VAR Ranking =
+    RANKX ( ALL ( Stocks[Company] ), [Total Return %], , DESC )
+RETURN
+    IF ( Ranking = 1, SELECTEDVALUE ( Stocks[Company] ) )
+
+Return Rank =
+RANKX ( ALL ( Stocks[Company] ), [Total Return %], , DESC )
+
+-----------------------------------------------------------
+5. NOTES
+-----------------------------------------------------------
+- All "%" measures are stored as numbers (e.g. 109.27) and formatted
+  as a percentage in the visual, not pre-divided by 100.
+- Daily Return % and Cumulative Return % are already pre-computed as
+  columns in the DAX_*.xlsx files for convenience; the DAX versions
+  above reproduce them natively inside Power BI if you load the raw
+  OHLCV columns only.
+- Correlation between companies (used in the "diversification" insight)
+  isn't natively expressible as a single DAX measure over a matrix —
+  it was computed in Python (pandas .corr()) and can be dropped into
+  Power BI as a static reference table if needed.

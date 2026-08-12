@@ -1,0 +1,20 @@
+Everyone expected Tesla to win. The data said otherwise. 📊
+
+For my latest data analysis project, I compared 14 months of daily stock data (Jan 2021 – Feb 2022) for Ford, GM, and Tesla to see which automaker actually delivered the best return — and built an interactive dashboard to tell the story.
+
+What I did:
+🔹 Cleaned and merged 290 days of OHLCV data per company in Python (pandas)
+🔹 Engineered metrics: daily return, cumulative return, volatility, moving averages, and cross-stock correlation
+🔹 Documented the logic as Power BI-style DAX measures
+🔹 Built an interactive dashboard (KPI cards, trend charts, risk comparison) and a slide deck to summarize the findings
+
+What the data showed:
+📈 Ford returned +109.3% — over 6x GM and 10x Tesla, from a starting price under $9
+⚡ Tesla was the riskiest of the three (3.64% daily volatility) and swung hardest in both directions (+19.6% / −12.0% on its best/worst days)
+🔗 Ford and GM moved almost in lockstep (0.76 correlation) — Tesla was the real diversifier, not GM
+
+Biggest takeaway for me: raw price ≠ performance. The "boring" $9 stock outperformed the headline-grabbing one, and you'd only catch that by actually running the numbers.
+
+Would love feedback from anyone working in data analytics or equity research — always looking to sharpen how I turn raw data into a clear story.
+
+#DataAnalysis #Python #PowerBI #DAX #DataVisualization #FinancialAnalysis #DataScience #PortfolioProject
